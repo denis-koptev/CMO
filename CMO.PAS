@@ -1,0 +1,215 @@
+Uses Graph, CRT, Func2, Menu, Graphic;
+
+Var M: Menu1;
+    Q: Main;
+    B: Buffer;
+    R: Results;
+    OsX: OX;
+    OsY: OY;
+    Gr: GrBody;
+    i, score:integer;
+    k: byte; {Realization number}
+    t: text;
+    label 1, 2;
+
+{------------------------------------------------}
+
+Procedure Settings(Var M: MAIN; answ: byte);
+begin
+     closegraph;
+     clrscr;
+     if answ = 1 then begin
+        writeln(' SET YOUR NEW KMIN VALUE:');
+        write('  '); read(M.KMIN);
+     end else begin
+         writeln(' SET YOUR NEW LAMs FOR 2-4 SOURCES');
+         for i:=2 to N do begin
+             writeln('  ',i,': ');
+             read(M.LAM[i]);
+         end;
+     end;
+        writeln(' Successfully! Press any key to return...');
+     readkey;
+end;
+
+Procedure Results(M: MAIN);
+Var i,k: integer;
+    LAM: ArrReal;
+    answ: byte;
+begin
+     cleardevice;       answ:=1;
+     while true do begin
+     if answ = 1 then begin
+        cleardevice;
+        setcolor(red);
+        settextstyle(0,0,0);
+        outtextxy(250,20,'PROBABILITY OF REFUSAL');
+        OsX.Init(2,3,0.1);
+        OsY.Init(0,1,0.1);
+        OsX.Draw; OsY.Draw;
+        for k:=1 to 11 do begin
+             gr.PutPoint2(OsX, OsY, 1.9+0.1*k, R.AllPOTK, k);
+             if k>1 then gr.PutLine(OsX,OsY,1.9+0.1*k,R.AllPOTK,k);
+        end;
+     end else begin
+         cleardevice;
+         outtextxy(250,20,'STAY IN SYSTEM TIME');
+         OsX.Init(2,3,0.1);
+         OsY.Init(0,3,0.5);
+         OsX.Draw; OsY.Draw;
+         for k:=1 to 11 do begin
+             gr.PutPoint2(OsX, OsY, 1.9+0.1*k, R.AllFTIME, k);
+             if k>1 then gr.PutLine(OsX,OsY,1.9+0.1*k,R.AllFTIME,k);
+         end;
+     end;
+     case readkey of
+          #77: begin dec(answ); if answ<1 then answ:=2; end;
+          #75: begin inc(answ); if answ>2 then answ:=1; end;
+          #27: break;
+     end;
+     end;
+end;
+
+Procedure ShowTable(Q: MAIN);
+Var i,j: byte;
+    s: string;
+Begin
+     cleardevice;
+     setlinestyle(0,0,0);
+     setcolor(white);
+     OutTextXY(220,30,'RESULT TABLE');
+     settextstyle(0,0,0);
+     OutTextXY(20,400,'Press ESC to return');
+     for i:=1 to 13 do begin
+         line(5,50+25*i,628,50+25*i);
+         line((i-1)*52+5,75,(i-1)*52+5,375);
+     end;
+     setcolor(green);
+     for i:=1 to 11 do begin
+         str(i,s);
+         OutTextXY(i*52+27,85,s);
+     end;
+     SetFillStyle(1,0);
+     Bar(9,101,190,124);
+     OutTextXY(13,110,'Probability of refusal');
+     Bar(9,251,190,274);
+     OutTextXY(13,260,'Stay in system time');
+
+     for i:=1 to 4 do begin
+         setcolor(green);
+         str(i,s);
+         OutTextXY(10,110+i*25,s);
+         OutTextXY(15,110+i*25,' src');
+         for j:=1 to 11 do begin
+             setcolor(white);
+             str(R.AllPOTK[i,j]:3:2,s);
+             OutTextXY(14+52*j,110+i*25,s);
+         end;
+     end;
+     for i:=1 to 4 do begin
+         setcolor(green);
+         str(i,s);
+         OutTextXY(10,260+i*25,s);
+         OutTextXY(15,260+i*25,' src');
+         for j:=1 to 11 do begin
+             setcolor(white);
+             str(R.AllFTIME[i,j]:3:2,s);
+             OutTextXY(14+52*j,260+i*25,s);
+         end;
+     end;
+     while true do if readkey = #27 then break;
+End;
+
+Procedure Help;
+Var f: text;
+    n: integer;
+       s: string;
+begin
+     assign(f,'help.inf');
+     reset(f);
+     cleardevice;
+     setcolor(green);
+     outtextxy(40, 20, 'HELP');
+     n := 20;
+     settextstyle(1,0,1);
+     setcolor(white);
+     {settextstyle(1,1,1); }
+     while not eof(f) do begin
+           readln(f, s);
+           outtextxy(40, 50+n, s);
+           n := n + 25;
+     end;
+     line(30, n+70, 610, n+70);
+     readkey;
+end;
+
+{------------------------------------------------}
+
+begin
+    Q.GlobalInit; Q.KMIN := 1000;
+    1:
+    clrscr;
+    M.but1 := yellow;
+    M.but2 := white;
+    M.but3 := yellow;
+    M.text := white;
+    M.sel := red;
+    M.Init;
+    2:
+    Q.LAM[1]:=1;
+    M.Draw(Q);
+
+    {Scheme of answers:
+            1: change kmin;
+            2: change lams;
+            3: start graphic;
+            4: start text;
+            5: watch graphs;
+            6: watch table
+            7: show help}
+
+    case m.answ of
+         1,2: begin Settings(Q, m.answ); goto 1; end;
+         3: cleardevice;
+         5: begin Results(Q); goto 2; end;
+         6: begin ShowTable(Q); goto 2; end;
+         7: begin Help; goto 2; end;
+         4: begin closegraph; end;
+    end;
+
+    assign(t, 'res.out');
+    rewrite(t);
+
+    writeln('Please, wait...');   k:=0;  score:=0;
+    While Q.Lam[1]<=8 do begin
+          Randomize;
+          if m.answ = 3 then begin
+             ClearDevice;
+             OsX.Init(0,Q.KMIN,Q.KMIN/10);
+             OsY.Init(0,1,0.1);
+             OsX.Draw;
+             OsY.Draw;
+          end;
+          score := 0;
+          inc(k);
+          Q.Init1; Q.Init; B.Init;
+          While (Q.kol[1]<Q.KMIN) or (Q.kol[2]<Q.KMIN) or
+          (Q.kol[3]<Q.KMIN) or (Q.kol[4]<Q.KMIN) do begin
+                         Q.BOOS; inc(score);
+                         if (score mod (Q.KMIN div 100)=0)
+                         and(m.answ=3) then begin
+                            for i:=1 to N do Q.locPOTK[i]:=Q.KOTK[i]/Q.KOL[i];
+                            Gr.putpoint(Q, OsX,OsY, Q.KOL, Q.locPOTK);
+                         end;
+          end;
+          R.Get(Q, t, k); {Into text file}
+          if m.answ = 4 then R.Put(Q, k); {If text mode is on}
+          Q.LAM[1]:=Q.LAM[1]+0.7;
+    end; close(t); writeln('Done! Press any key...');
+    readkey;
+
+    OsX.Crush;
+    OsY.Crush;
+    if m.answ = 4 then goto 1 else goto 2;
+
+end.

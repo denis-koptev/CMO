@@ -1,0 +1,145 @@
+Unit GRAPHIC;
+Interface
+    Uses CRT, Graph, FUNC2;
+
+    Type
+        OX = object
+               d: real; {real step}
+               subd: integer; {pixel step}
+               prop: real;  {proportion}
+               min, max: real;
+               Constructor Init(pmin,pmax,pd: real);
+               Procedure Draw; virtual;
+               Destructor Crush;
+        end;
+
+        OY = object(OX)
+           Constructor Init(pmin,pmax,pd: real);
+           Procedure Draw; virtual;
+        end;
+
+        GrBody = object
+               {x,y: real;}
+               Procedure PutPoint(M:MAIN; OsX: OX; OsY: OY; x:ArrInt; y: ArrReal);
+               Procedure PutLine(OsX: OX; OsY: OY;
+                         x: real; ALL: AllArr; k: integer);
+               Procedure PutPoint2(OsX: OX; OsY: OY;
+                         x: real; y: AllArr; k: integer);
+        end;
+
+Implementation
+     Constructor OX.Init(pmin,pmax,pd: real);
+     Begin
+          min := pmin;
+          max := pmax;
+          d := pd;
+          prop := 560/(max-min);
+          subd := round(d*prop);
+     End;
+
+     Procedure OX.Draw;
+     Var px: integer;
+         rx: real;
+         sx: string;
+     Begin
+          setlinestyle(0,0,0);
+          settextstyle(0,0,0);
+          setcolor(white);
+          line(60,440,620,440);
+          rx:=min; px:=60;
+          while rx<=max do begin
+                line(px,435,px,445);
+                str(rx:2:1,sx);
+                outtextxy(px-20,450,sx);
+                px:=px+subd;
+                rx:=rx+d;
+          end;
+          setcolor(1);
+          outtextxy(550,10,'1 source');
+          setcolor(2);
+          outtextxy(550,20,'2 source');
+          setcolor(3);
+          outtextxy(550,30,'3 source');
+          setcolor(4);
+          outtextxy(550,40,'4 source');
+
+     End;
+
+     Destructor OX.Crush;
+     Begin
+     End;
+
+     Constructor OY.Init(pmin,pmax,pd: real);
+     Begin
+          min := pmin;
+          max := pmax;
+          d := pd;
+          prop := 430/(max-min);
+          subd := round(d*prop);
+     End;
+
+     Procedure OY.Draw;
+     Var ry: real;
+         py: integer;
+         sy: string;
+     Begin
+          setlinestyle(0,0,0);
+          setcolor(white);
+          setlinestyle(0,0,0);
+          settextstyle(0,0,0);
+          setcolor(white);
+          line(60,10,60,440);
+          ry:=max; py:=10;
+          while ry>min do begin
+                line(55,py,65,py);
+                str(ry:2:1,sy);
+                outtextxy(10,py,sy);
+                py:=py+subd;
+                ry:=ry-d;
+          end;
+     End;
+
+     Procedure GrBody.PutPoint(M:MAIN; OsX: OX; OsY: OY;
+               x: ArrInt; y: ArrReal);
+     Var i, px, py: integer;
+     Begin
+          for i:=1 to N do begin
+              px:=60+round(x[i]*OsX.prop);
+
+
+              py:=440-round(y[i]*OsY.prop);
+              if x[i]<=M.KMIN then putpixel(px,py,i);
+              {writeln(r,x,' ',y[1]);}
+          end;
+          {putpixel(60+round(500*OsX.prop), 440-round(0.5*OsY.prop), white);}
+     End;
+
+     Procedure GrBody.PutPoint2(OsX: OX; OsY: OY;
+               x: real; y: AllArr; k: integer);
+     Var i, px, py: integer;
+     Begin
+          for i:=1 to N do begin
+              px:=60+round((x-2)*OsX.prop);
+              py:=440-round(y[i,k]*OsY.prop);
+              putpixel(px,py,i);
+              {writeln(r,x,' ',y[1]);}
+          end;
+          {putpixel(60+round(3*OsX.prop), 440-round(0.5*OsY.prop), white)}
+     End;
+
+     Procedure GrBody.PutLine(OsX: OX; OsY: OY;
+               x: real; ALL: AllArr; k: integer);
+     Var i, ppx,ppy,px,py: integer;
+     Begin
+          for i:=1 to N do begin
+              ppx:=60+round((x-2.1)*OsX.prop);
+              ppy:=440-round(ALL[i,k-1]*OsY.prop);
+              px:=60+round((x-2)*OsX.prop);
+              py:=440-round(All[i,k]*OsY.prop);
+              setcolor(i);
+              line(ppx,ppy,px,py);
+          end;
+     End;
+
+begin
+end.
